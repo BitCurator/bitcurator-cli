@@ -1,6 +1,6 @@
 {
   "name": "bitcurator-cli",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Manage your bitcurator installation",
   "main": "bitcurator-cli.js",
   "bin": {
@@ -10,7 +10,7 @@
     "pkg:prep": "jo version=$(bash .ci/version) > config.json",
     "pkg:build": "pkg -t node12-linux --out-dir release package.json && cd release && mv bitcurator-cli bitcurator-cli-linux",
     "pkg:hash": "cd release && shasum -a 256 bitcurator-cli-linux > bitcurator-cli-linux.sha256",
-    "pkg:sign": "cd release && rm -f bitcurator-cli-linux.sha256.asc && gpg --armor --clearsign --digest-algo SHA256 -u <8-CHAR-KEY> bitcurator-cli-linux.sha256 && rm bitcurator-cli-linux.sha256",
+    "pkg:sign": "cd release && rm -f bitcurator-cli-linux.sha256.asc && gpg --armor --clearsign --digest-algo SHA256 -u 1ACB8887 bitcurator-cli-linux.sha256 && rm bitcurator-cli-linux.sha256",
     "pkg": "npm run pkg:prep && npm run pkg:build && npm run pkg:hash && npm run pkg:sign"
   },
   "author": "Erik Kristensen <erik@erikkristensen.com>. Revised for BitCurator by Corey Forman.",
