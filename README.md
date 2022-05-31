@@ -6,17 +6,15 @@
 [![GitHub forks](https://img.shields.io/github/forks/bitcurator/bitcurator-salt.svg)](https://github.com/bitcurator/bitcurator-salt/network)
 [![Twitter Follow](https://img.shields.io/twitter/follow/bitcurator.svg?style=social&label=Follow)](https://twitter.com/bitcurator)
 
-BitCurator CLI Installer
+This repo contains the source for the BitCurator CLI installer, a command line tool to install and upgrade the BitCurator environment. It is intended to be used with Ubuntu 20.04.
 
-This repo contains the source for the BitCurator CLI installer, a command line tool to install and upgrade the BitCurator environment.
-
-You can find pre-built virtual machines (Ubuntu 22.04-based) at https://github.com/BitCurator/bitcurator-distro/wiki/Releases for specific releases. If you wish to create the environment from scratch, you can follow the steps below to install the BitCurator environment on your own physical host or VM.
+You can find pre-built virtual machines (Ubuntu 20.04-based) at https://github.com/BitCurator/bitcurator-distro/wiki/Releases for specific releases. If you wish to create the environment from scratch, you can follow the steps below to install the BitCurator environment on your own physical host or VM.
 
 **Note: BitCurator must be deployed on an x86/amd64 version of Ubuntu. Currently, it is not possible to deploy it on systems with ARM processors (including Apple M1).**
 
-**1. Install Ubuntu 22.04**
+**1. Install Ubuntu 20.04**
 
-Download the 64-bit Ubuntu 22.04 desktop image from https://releases.ubuntu.com/22.04/ubuntu-22.04-desktop-amd64.iso and install on your local machine or in a VM. If you're using a VM, we recommend allocating at least 4GB of RAM and 64GB of disk space to the instance.
+Download the 64-bit Ubuntu 20.04 desktop image from https://releases.ubuntu.com/20.04/ubuntu-20.04-desktop-amd64.iso and install on your local machine or in a VM. If you're using a VM, we recommend allocating at least 4GB of RAM and 64GB of disk space to the instance.
 
 To remain consistent with the default configuration of BitCurator, when prompted use **BitCurator** for the Full Name, **bcadmin** for the username, and **bcadmin** for the password.
 
