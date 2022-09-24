@@ -49,7 +49,7 @@ Options:
   --verbose             Display verbose logging
 `
 
-const saltstackVersion = '3004'
+const saltstackVersion = '3005'
 const pubKey = `
 Version: GnuPG
 
@@ -234,7 +234,7 @@ const saltCheckVersion = (path, value) => {
 const setupSalt = async () => {
   if (cli['--dev'] === false) {
     const aptSourceList = '/etc/apt/sources.list.d/saltstack.list'
-    const aptDebString = `deb [signed-by=/usr/share/keyrings/salt-archive-keyring.gpg, arch=amd64] https://repo.saltproject.io/py3/ubuntu/${osVersion}/amd64/${saltstackVersion} ${osCodename} main`
+    const aptDebString = `deb [signed-by=/usr/share/keyrings/salt-archive-keyring.gpg, arch=amd64] https://repo.saltproject.io/salt/py3/ubuntu/${osVersion}/amd64/${saltstackVersion} ${osCodename} main`
 
     const aptExists = await fileExists(aptSourceList)
     const saltExists = await fileExists('/usr/bin/salt-call')
@@ -245,7 +245,7 @@ const setupSalt = async () => {
       console.log('Installing and configuring SaltStack...')
       await child_process.execAsync('apt-get remove -y --allow-change-held-packages salt-minion salt-common')
       await fs.writeFileAsync(aptSourceList, aptDebString)
-      await child_process.execAsync(`wget -O /usr/share/keyrings/salt-archive-keyring.gpg https://repo.saltproject.io/py3/ubuntu/${osVersion}/amd64/${saltstackVersion}/salt-archive-keyring.gpg`)
+      await child_process.execAsync(`wget -O /usr/share/keyrings/salt-archive-keyring.gpg https://repo.saltproject.io/salt/py3/ubuntu/${osVersion}/amd64/${saltstackVersion}/salt-archive-keyring.gpg`)
       await child_process.execAsync('apt-get update')
       await child_process.execAsync('apt-get install -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" -y --allow-change-held-packages salt-common', {
         env: {
@@ -256,7 +256,7 @@ const setupSalt = async () => {
     } else if (aptExists === false || saltExists === false) {
       console.log('Installing and configuring SaltStack...')
       await fs.writeFileAsync(aptSourceList, aptDebString)
-      await child_process.execAsync(`wget -O /usr/share/keyrings/salt-archive-keyring.gpg https://repo.saltproject.io/py3/ubuntu/${osVersion}/amd64/${saltstackVersion}/salt-archive-keyring.gpg`)
+      await child_process.execAsync(`wget -O /usr/share/keyrings/salt-archive-keyring.gpg https://repo.saltproject.io/salt/py3/ubuntu/${osVersion}/amd64/${saltstackVersion}/salt-archive-keyring.gpg`)
       await child_process.execAsync('apt-get update')
       await child_process.execAsync('apt-get install -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" -y --allow-change-held-packages salt-common', {
         env: {
