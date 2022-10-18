@@ -12,15 +12,16 @@ You can find pre-built virtual machines for some releases at https://github.com/
 
 If you wish to build the environment from scratch on your own physical host or VM, visit https://github.com/bitcurator/bitcurator-salt and view the README for detailed instructions.
 
+## BitCurator documentation, help, and discussions
 
-## BitCurator documentation, help, and other information
+Visit the [BitCurator wiki on GitHub](https://github.com/BitCurator/bitcurator-distro/wiki/Releases) to find the [latest version of our Quickstart Guide](https://github.com/BitCurator/bitcurator-distro/wiki/Releases#quickstart-guide).
 
-User documentation and additional resources are available on
-[the BitCurator Environment wiki](https://confluence.educopia.org/display/BC).
+Have a question, idea, or use case to share? Post it to the [BitCurator Discussions](https://github.com/orgs/BitCurator/discussions) board!
 
-Questions and comments can also be directed to the bitcurator-users list.
+Some community maintained documentation and resources are available at
+[the BitCurator Confluence instance hosted by Educopia](https://confluence.educopia.org/display/BC). Note that the information on this site may lag behind the latest release(s).
 
-[https://groups.google.com/d/forum/bitcurator-users](https://groups.google.com/d/forum/bitcurator-users)
+Questions and comments can also be sent to the [bitcurator-users Google Group](https://groups.google.com/d/forum/bitcurator-users).
 
 ## Acknowledgements
 
