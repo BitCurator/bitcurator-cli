@@ -1,6 +1,6 @@
 {
   "name": "bitcurator-cli",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Manage your bitcurator installation",
   "main": "bitcurator-cli.js",
   "bin": {
@@ -13,7 +13,7 @@
     "pkg:sign": "cd release && rm -f bitcurator-cli-linux.sha256.asc && gpg --armor --clearsign --digest-algo SHA256 -u 1ACB8887 bitcurator-cli-linux.sha256 && rm bitcurator-cli-linux.sha256",
     "pkg": "npm run pkg:prep && npm run pkg:build && npm run pkg:hash && npm run pkg:sign"
   },
-  "author": "Erik Kristensen <erik@erikkristensen.com>. Revised for BitCurator by Corey Forman.",
+  "author": "Erik Kristensen <erik@erikkristensen.com>. Revised for BitCurator by Corey Forman and Kam Woods.",
   "license": "MIT",
   "dependencies": {
     "@octokit/rest": "^18.0.3",
@@ -22,10 +22,10 @@
     "github": "14.0.0",
     "js-yaml": "3.14.0",
     "mkdirp": "1.0.4",
-    "openpgp": "4.10.8",
+    "openpgp": "^4.10.11",
     "proxy-agent": "^5.0.0",
     "request": "2.88.2",
-    "semver": "7.3.4",
+    "semver": "^7.6.3",
     "split": "1.0.1",
     "username": "5.1.0"
   },
