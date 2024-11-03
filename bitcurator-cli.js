@@ -168,7 +168,7 @@ const validOS = async () => {
       return true
     }
 
-    if (contents.indexOf('UBUNTU_CODENAME=noble') !== -1 {
+    if (contents.indexOf('UBUNTU_CODENAME=noble') !== -1) {
       osVersion = '24.04'
       osCodename = 'noble'
       return true
