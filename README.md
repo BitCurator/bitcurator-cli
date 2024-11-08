@@ -15,8 +15,7 @@ Visit the [BitCurator wiki on GitHub](https://github.com/BitCurator/bitcurator-d
 
 Have a question or need help? Visit the [bitcurator-users Google Group](https://groups.google.com/d/forum/bitcurator-users).
 
-Some community maintained documentation and resources are available at
-[the BitCurator documentation hosted on GitHub Pages]((https://bitcurator.github.io/documentation/). Note that the information on this site may lag behind the latest release(s).
+Some community maintained documentation and resources are available at [the BitCurator documentation hosted on GitHub Pages](https://bitcurator.github.io/documentation/). Note that the information on this site may lag behind the latest release(s).
 
 A [BitCurator Discussions](https://github.com/orgs/BitCurator/discussions) board is also available for ideas or comments.
 
@@ -36,5 +35,5 @@ The BitCurator environment is a product of the BitCurator team housed at the Sch
 
 Ongoing support for the BitCurator environment is managed by the BitCurator Consortium. Find out more at:
 
-http://www.bitcuratorconsortium.org/
+https://bitcuratorconsortium.org/
 
