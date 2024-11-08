@@ -5,7 +5,7 @@
 [![GitHub issues](https://img.shields.io/github/issues/bitcurator/bitcurator-salt.svg)](https://github.com/bitcurator/bitcurator-salt/issues)
 [![GitHub forks](https://img.shields.io/github/forks/bitcurator/bitcurator-salt.svg)](https://github.com/bitcurator/bitcurator-salt/network)
 
-This repo contains the source for the BitCurator CLI installer, a command line tool to install and upgrade the BitCurator environment. It is intended to be used with Ubuntu 20.04.
+This repo contains the source for the BitCurator CLI installer, a command line tool to install and upgrade the BitCurator environment. It supports BitCurator installations on recent Ubuntu LTS releases (24.04, 22.04, and 20.04).
 
 You can find pre-built virtual machines for some releases at https://github.com/BitCurator/bitcurator-distro/wiki/Releases. 
 
@@ -18,7 +18,7 @@ Visit the [BitCurator wiki on GitHub](https://github.com/BitCurator/bitcurator-d
 Have a question, idea, or use case to share? Post it to the [BitCurator Discussions](https://github.com/orgs/BitCurator/discussions) board!
 
 Some community maintained documentation and resources are available at
-[the BitCurator Confluence instance hosted by Educopia](https://confluence.educopia.org/display/BC). Note that the information on this site may lag behind the latest release(s).
+[the BitCurator documentation hosted on GitHub Pages]((https://bitcurator.github.io/documentation/). Note that the information on this site may lag behind the latest release(s).
 
 Questions and comments can also be sent to the [bitcurator-users Google Group](https://groups.google.com/d/forum/bitcurator-users).
 
@@ -30,7 +30,7 @@ This tool originally authored by Erik Kristensen, and revised for BitCurator by 
 
 See LICENSE file for details. 
 
-The BitCurator logo, BitCurator project documentation, and other non-software products of the BitCurator team are subject to the the Creative Commons Attribution 4.0 Generic license (CC By 4.0).
+The BitCurator logo, BitCurator project documentation, and other non-software products of the BitCurator team are licenced with the Creative Commons Attribution 4.0 Generic license (CC By 4.0).
 
 ## Development Team and Support
 
