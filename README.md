@@ -7,20 +7,18 @@
 
 This repo contains the source for the BitCurator CLI installer, a command line tool to install and upgrade the BitCurator environment. It supports BitCurator installations on recent Ubuntu LTS releases (24.04, 22.04, and 20.04).
 
-You can find pre-built virtual machines for some releases at https://github.com/BitCurator/bitcurator-distro/wiki/Releases. 
-
-If you wish to build the environment from scratch on your own physical host or VM, visit https://github.com/bitcurator/bitcurator-salt and view the README for detailed instructions.
+You can find information on BitCurator releases and installation at https://github.com/BitCurator/bitcurator-distro/wiki/Releases. Or, visit https://github.com/bitcurator/bitcurator-salt and view the README to get started immediately with installation.
 
 ## BitCurator documentation, help, and discussions
 
 Visit the [BitCurator wiki on GitHub](https://github.com/BitCurator/bitcurator-distro/wiki/Releases) to find the [latest version of our Quickstart Guide](https://github.com/BitCurator/bitcurator-distro/wiki/Releases#quickstart-guide).
 
-Have a question, idea, or use case to share? Post it to the [BitCurator Discussions](https://github.com/orgs/BitCurator/discussions) board!
+Have a question or need help? Visit the [bitcurator-users Google Group](https://groups.google.com/d/forum/bitcurator-users).
 
 Some community maintained documentation and resources are available at
 [the BitCurator documentation hosted on GitHub Pages]((https://bitcurator.github.io/documentation/). Note that the information on this site may lag behind the latest release(s).
 
-Questions and comments can also be sent to the [bitcurator-users Google Group](https://groups.google.com/d/forum/bitcurator-users).
+A [BitCurator Discussions](https://github.com/orgs/BitCurator/discussions) board is also available for ideas or comments.
 
 ## Acknowledgements
 
