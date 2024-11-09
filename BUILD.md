@@ -1,13 +1,16 @@
 ## Building the CLI
+
+This documentation is intended for developers and maintainers. To install BitCurator using a prebuild binary of this tool, follow the instructions at https://github.com/BitCurator/bitcurator-distro/wiki/Releases.
+
 ### Pre-requisites
 - jo
 - jq
 - gpg
 - git
-- nodejs (v12 - 14, with npm - see instructions [here](https://github.com/nodesource/distributions/blob/master/README.md#installation-instructions))
+- nodejs (minimum v12 - 14, with npm - see instructions [here](https://github.com/nodesource/distributions/blob/master/README.md#installation-instructions))
 
 ```bash
-$ sudo apt-get install jo jq gpg nodejs
+$ sudo apt-get install jo jq gpg nodejs npm
 ```
 ### Modifying
 To customize the CLI, it's important to change the following spots in the CLI (as desired):
