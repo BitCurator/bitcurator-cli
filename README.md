@@ -7,7 +7,7 @@
 
 This repo contains the source for the BitCurator CLI installer, a command line tool to install and upgrade the BitCurator environment. It supports BitCurator installations on recent Ubuntu LTS releases (24.04, 22.04, and 20.04).
 
-You can find information on BitCurator releases and installation at https://github.com/BitCurator/bitcurator-distro/wiki/Releases. Or, visit https://github.com/bitcurator/bitcurator-salt and view the README to get started immediately with installation.
+Visit https://github.com/bitcurator/bitcurator-salt and view the README to get started immediately with installation. You can find additional information on BitCurator releases and installation at https://github.com/BitCurator/bitcurator-distro/wiki/Releases. 
 
 ## BitCurator documentation, help, and discussions
 
