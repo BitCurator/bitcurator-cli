@@ -1,19 +1,22 @@
 const cfg = require('./config.json')
-const bluebird = require('bluebird')
 const os = require('os')
-const fs = bluebird.promisifyAll(require('fs'))
-const child_process = bluebird.promisifyAll(require('child_process'))
+const fs = require('fs').promises
+const fsSync = require('fs')
+const child_process = require('child_process')
+const { promisify } = require('util')
 const crypto = require('crypto')
 const spawn = require('child_process').spawn
 const docopt = require('docopt').docopt
 const { Octokit } = require('@octokit/rest')
 const mkdirp = require('mkdirp')
-const request = require('request')
 const openpgp = require('openpgp')
 const username = require('username')
 const readline = require('readline')
 const split = require('split')
 const semver = require('semver')
+
+// Promisify child_process functions
+const execAsync = promisify(child_process.exec)
 
 /**
  * Setup Custom YAML Parsing
@@ -154,13 +157,7 @@ const setup = async () => {
 
 const validOS = async () => {
   try {
-    const contents = fs.readFileSync(releaseFile, 'utf8')
-
-    if (contents.indexOf('UBUNTU_CODENAME=focal') !== -1) {
-      osVersion = '20.04'
-      osCodename = 'focal'
-      return true
-    }
+    const contents = await fs.readFile(releaseFile, 'utf8')
 
     if (contents.indexOf('UBUNTU_CODENAME=jammy') !== -1) {
       osVersion = '22.04'
@@ -195,40 +192,28 @@ const checkOptions = () => {
   }
 }
 
-const fileExists = (path) => {
-  return new Promise((resolve, reject) => {
-    fs.stat(path, (err, stats) => {
-      if (err && err.code === 'ENOENT') {
-        return resolve(false)
-      }
-
-      if (err) {
-        return reject(err)
-      }
-
-      return resolve(true)
-    })
-  })
+const fileExists = async (path) => {
+  try {
+    await fs.stat(path)
+    return true
+  } catch (err) {
+    if (err.code === 'ENOENT') {
+      return false
+    }
+    throw err
+  }
 }
 
-const saltCheckVersion = (path, value) => {
-  return new Promise((resolve, reject) => {
-    fs.readFile(path, 'utf8', (err, contents) => {
-      if (err && err.code === 'ENOENT') {
-        return resolve(false);
-      }
-
-      if (err) {
-        return reject(err);
-      }
-
-      if (contents.indexOf(value) === 0) {
-        return resolve(true);
-      }
-
-      return resolve(false);
-    })
-  })
+const saltCheckVersion = async (path, value) => {
+  try {
+    const contents = await fs.readFile(path, 'utf8')
+    return contents.indexOf(value) === 0
+  } catch (err) {
+    if (err.code === 'ENOENT') {
+      return false
+    }
+    throw err
+  }
 }
 
 const setupSalt = async () => {
@@ -243,12 +228,12 @@ const setupSalt = async () => {
     if (aptExists === true && saltVersionOk === false) {
       console.log('NOTICE: Fixing incorrect SaltStack version configuration.')
       console.log('Installing and configuring SaltStack...')
-      await child_process.execAsync('apt-get remove -y --allow-change-held-packages salt-minion salt-common')
-      await fs.writeFileAsync(aptSourceList, aptDebString)
-      await child_process.execAsync(`wget -O /usr/share/keyrings/salt-archive-keyring.pgp https://packages.broadcom.com/artifactory/api/security/keypair/SaltProjectKey/public`)
-      await child_process.execAsync(`printf 'Package: salt-*\nPin: version ${saltstackVersion}.*\nPin-Priority: 1001' > /etc/apt/preferences.d/salt-pin-1001`)
-      await child_process.execAsync('apt-get update')
-      await child_process.execAsync('apt-get install -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" -y --allow-change-held-packages salt-common', {
+      await execAsync('apt-get remove -y --allow-change-held-packages salt-minion salt-common')
+      await fs.writeFile(aptSourceList, aptDebString)
+      await execAsync(`wget -O /usr/share/keyrings/salt-archive-keyring.pgp https://packages.broadcom.com/artifactory/api/security/keypair/SaltProjectKey/public`)
+      await execAsync(`printf 'Package: salt-*\nPin: version ${saltstackVersion}.*\nPin-Priority: 1001' > /etc/apt/preferences.d/salt-pin-1001`)
+      await execAsync('apt-get update')
+      await execAsync('apt-get install -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" -y --allow-change-held-packages salt-common', {
         env: {
           ...process.env,
           DEBIAN_FRONTEND: 'noninteractive',
@@ -256,31 +241,30 @@ const setupSalt = async () => {
       })
     } else if (aptExists === false || saltExists === false) {
       console.log('Installing and configuring SaltStack...')
-      await fs.writeFileAsync(aptSourceList, aptDebString)
-      await child_process.execAsync(`wget -O /usr/share/keyrings/salt-archive-keyring.pgp https://packages.broadcom.com/artifactory/api/security/keypair/SaltProjectKey/public`)
-      await child_process.execAsync(`printf 'Package: salt-*\nPin: version ${saltstackVersion}.*\nPin-Priority: 1001' > /etc/apt/preferences.d/salt-pin-1001`)
-      await child_process.execAsync('apt-get update')
-      await child_process.execAsync('apt-get install -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" -y --allow-change-held-packages salt-common', {
+      await fs.writeFile(aptSourceList, aptDebString)
+      await execAsync(`wget -O /usr/share/keyrings/salt-archive-keyring.pgp https://packages.broadcom.com/artifactory/api/security/keypair/SaltProjectKey/public`)
+      await execAsync(`printf 'Package: salt-*\nPin: version ${saltstackVersion}.*\nPin-Priority: 1001' > /etc/apt/preferences.d/salt-pin-1001`)
+      await execAsync('apt-get update')
+      await execAsync('apt-get install -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" -y --allow-change-held-packages salt-common', {
         env: {
           ...process.env,
           DEBIAN_FRONTEND: 'noninteractive',
         },
       })
     }
-  } else {
-    return new Promise((resolve, reject) => {
-      resolve()
-    })
   }
 }
 
-const getCurrentVersion = () => {
-  return fs.readFileAsync(versionFile)
-    .catch((err) => {
-      if (err.code === 'ENOENT') return 'notinstalled'
-      if (err) throw err
-    })
-    .then(contents => contents.toString().replace(/\n/g, ''))
+const getCurrentVersion = async () => {
+  try {
+    const contents = await fs.readFile(versionFile)
+    return contents.toString().replace(/\n/g, '')
+  } catch (err) {
+    if (err.code === 'ENOENT') {
+      return 'notinstalled'
+    }
+    throw err
+  }
 }
 
 const listReleases = () => {
@@ -317,90 +301,115 @@ const getValidReleases = async () => {
   })
 }
 
-const getLatestRelease = () => {
-  return getValidReleases().then(releases => releases[0])
+const getLatestRelease = async () => {
+  const releases = await getValidReleases()
+  return releases[0]
 }
 
-const isValidRelease = (version) => {
-  return getValidReleases().then((releases) => {
-    return new Promise((resolve, reject) => {
-      if (releases.indexOf(version) === -1) {
-        return resolve(false)
-      }
-      resolve(true)
-    })
-  })
+const isValidRelease = async (version) => {
+  const releases = await getValidReleases()
+  return releases.indexOf(version) !== -1
 }
 
-const validateVersion = (version) => {
-  return getValidReleases().then((releases) => {
-    if (typeof releases.indexOf(version) === -1) {
-      throw new Error('The version you are attempting to install/upgrade to is not valid.')
-    }
-    return new Promise((resolve) => { resolve() })
-  })
+const validateVersion = async (version) => {
+  const releases = await getValidReleases()
+  if (releases.indexOf(version) === -1) {
+    throw new Error('The version you are attempting to install/upgrade to is not valid.')
+  }
 }
 
-const downloadReleaseFile = (version, filename) => {
+const downloadReleaseFile = async (version, filename) => {
   console.log(`>> downloading ${filename}`)
-
   const filepath = `${cachePath}/${version}/${filename}`
-
-  if (fs.existsSync(filepath) && cli['--no-cache'] === false) {
-    return new Promise((resolve) => { resolve() })
+  if (fsSync.existsSync(filepath) && cli['--no-cache'] === false) {
+    return Promise.resolve()
   }
+  const url = `https://github.com/bitcurator/bitcurator-salt/releases/download/${version}/${filename}`
+  try {
+    const response = await fetch(url)
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+    }
+    const output = fsSync.createWriteStream(filepath)
+    return new Promise((resolve, reject) => {
+      const reader = response.body.getReader()
 
-  return new Promise((resolve, reject) => {
-    const output = fs.createWriteStream(filepath)
-    const req = request.get(`https://github.com/bitcurator/bitcurator-salt/releases/download/${version}/${filename}`)
-    req.on('error', (err) => {
-      reject(err)
-    })
-    req
-      .on('response', (res) => {
-        if (res.statusCode !== 200) {
-          throw new Error(res.body)
+      const pump = async () => {
+        try {
+          while (true) {
+            const { done, value } = await reader.read()
+            if (done) break
+            output.write(value)
+          }
+          output.end()
+        } catch (err) {
+          output.destroy()
+          reject(err)
         }
-      })
-      .pipe(output)
-      .on('error', (err) => {
+      }
+
+      output.on('error', (err) => {
         reject(err)
       })
-      .on('close', resolve)
-  })
+
+      output.on('finish', () => {
+        resolve()
+      })
+
+      pump()
+    })
+  } catch (err) {
+    throw err
+  }
 }
 
-const downloadRelease = (version) => {
+const downloadRelease = async (version) => {
   console.log(`>> downloading bitcurator-salt-${version}.tar.gz`)
-
   const filepath = `${cachePath}/${version}/bitcurator-salt-${version}.tar.gz`
-
-  if (fs.existsSync(filepath) && cli['--no-cache'] === false) {
-    return new Promise((resolve, reject) => { resolve() })
+  if (fsSync.existsSync(filepath) && cli['--no-cache'] === false) {
+    return Promise.resolve()
   }
+  try {
+    const response = await fetch(`https://github.com/bitcurator/bitcurator-salt/archive/${version}.tar.gz`)
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
 
-  return new Promise((resolve, reject) => {
-    const output = fs.createWriteStream(filepath)
-    const req = request.get(`https://github.com/bitcurator/bitcurator-salt/archive/${version}.tar.gz`)
-    req.on('error', (err) => {
-      reject(err)
+    // Convert the response body to a readable stream and pipe to file
+    const output = fsSync.createWriteStream(filepath)
+    const reader = response.body.getReader()
+
+    return new Promise((resolve, reject) => {
+      const pump = async () => {
+        try {
+          while (true) {
+            const { done, value } = await reader.read()
+            if (done) break
+            output.write(value)
+          }
+          output.end()
+          resolve()
+        } catch (err) {
+          output.destroy()
+          reject(err)
+        }
+      }
+
+      output.on('error', reject)
+      pump()
     })
-    req
-      .pipe(output)
-      .on('error', (err) => {
-        reject(err)
-      })
-      .on('close', resolve)
-  })
+  } catch (err) {
+    throw err
+  }
 }
 
 const validateFile = async (version, filename) => {
   console.log(`> validating file ${filename}`)
-  const expected = await fs.readFileAsync(`${cachePath}/${version}/${filename}.sha256`)
+  const expected = await fs.readFile(`${cachePath}/${version}/${filename}.sha256`)
 
   const actual = await new Promise((resolve, reject) => {
     const shasum = crypto.createHash('sha256')
-    fs.createReadStream(`${cachePath}/${version}/${filename}`)
+    fsSync.createReadStream(`${cachePath}/${version}/${filename}`)
       .on('error', (err) => {
         reject(err)
       })
@@ -419,25 +428,27 @@ const validateFile = async (version, filename) => {
 
 const validateSignature = async (version, filename) => {
   console.log(`> validating signature for ${filename}`)
-
   const filepath = `${cachePath}/${version}/${filename}`
-
-  const ctMessage = await fs.readFileAsync(`${filepath}`, 'utf8')
-  const ctSignature = await fs.readFileAsync(`${filepath}.asc`, 'utf8')
+  const ctMessage = await fs.readFile(`${filepath}`, 'utf8')
+  const ctSignedMessage = await fs.readFile(`${filepath}.asc`, 'utf8')
   const ctPubKey = pubKey
 
+  const cleartextMessage = await openpgp.readCleartextMessage({
+    cleartextMessage: ctSignedMessage
+  })
+
   const options = {
-    message: await openpgp.cleartext.readArmored(ctSignature),
-    publicKeys: (await openpgp.key.readArmored(ctPubKey)).keys
+    message: cleartextMessage,
+    verificationKeys: await openpgp.readKey({ armoredKey: ctPubKey })
   }
 
   const valid = await openpgp.verify(options)
-
-  if (typeof valid.signatures === 'undefined' && typeof valid.signatures[0] === 'undefined') {
+  if (!valid.signatures || valid.signatures.length === 0) {
     throw new Error('Invalid Signature')
   }
 
-  if (valid.signatures[0].valid === false) {
+  const isValid = await valid.signatures[0].verified
+  if (!isValid) {
     throw new Error('PGP Signature is not valid')
   }
 }
@@ -522,7 +533,7 @@ const performUpdate = (version) => {
     let stdout = ''
     let stderr = ''
 
-    const logFile = fs.createWriteStream(logFilepath)
+    const logFile = fsSync.createWriteStream(logFilepath)
 
     const updateArgs = [
       '-l', 'debug', '--local',
@@ -535,7 +546,7 @@ const performUpdate = (version) => {
 
     const update = spawn('salt-call', updateArgs)
 
-    update.stdout.pipe(fs.createWriteStream(outputFilepath))
+    update.stdout.pipe(fsSync.createWriteStream(outputFilepath))
     update.stdout.pipe(logFile)
 
     update.stderr.pipe(logFile)
@@ -577,11 +588,11 @@ const performUpdate = (version) => {
 
 const summarizeResults = async (version) => {
   const outputFilepath = `${cachePath}/${version}/results.yml`
-  const rawContents = await fs.readFileAsync(outputFilepath)
+  const rawContents = await fs.readFile(outputFilepath)
   let results = {}
 
   try {
-    results = yaml.safeLoad(rawContents, { schema: PYTHON_SCHEMA })
+    results = yaml.load(rawContents, { schema: PYTHON_SCHEMA })
   } catch (err) {
     // TODO handle?
   }
@@ -614,7 +625,7 @@ const summarizeResults = async (version) => {
       console.log(`        Comment: ${key['comment']}`)
     })
 
-    return new Promise((resolve, reject) => { return resolve() })
+    return Promise.resolve()
   }
 
   console.log(`\n\n>> COMPLETED SUCCESSFULLY! Success: ${success}, Failure: ${failure}`)
@@ -628,12 +639,13 @@ const saveConfiguration = (version) => {
     user: cli['--user']
   }
 
-  return fs.writeFileAsync(configFile, yaml.safeDump(config))
+  return fs.writeFile(configFile, yaml.dump(config))
 }
 
 const loadConfiguration = async () => {
   try {
-    return await fs.readFileAsync(configFile).then((c) => yaml.safeLoad(c))
+    const contents = await fs.readFile(configFile, 'utf8')
+    return yaml.load(contents)
   } catch (err) {
     if (err.code === 'ENOENT') {
       return {
@@ -662,7 +674,7 @@ Version: ${cfg.version}
 User: ${currentUser}
 
 Config:
-${yaml.safeDump(config)}
+${yaml.dump(config)}
 `
     console.log(debug)
     return process.exit(0)
@@ -784,3 +796,4 @@ const main = async () => {
 }
 
 main()
+
