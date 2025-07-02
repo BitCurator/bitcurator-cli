@@ -129,15 +129,6 @@ const error = (err) => {
   process.exit(1)
 }
 
-//async function fileExists(path) {
-//  try {
-//    await fs.access(path);
-//    return true;
-//  } catch {
-//    return false;
-//  }
-//}
-
 const setup = async () => {
   if (cli['--dev'] === true) {
     cachePath = '/tmp/var/cache/bitcurator'
