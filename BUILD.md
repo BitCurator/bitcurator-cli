@@ -17,7 +17,7 @@ To customize the CLI, it's important to change the following spots in the CLI (a
 #### xxx-cli.js
 - lines 35-50 (usage)
 - lines 56-85 (PGP public key)
-- `const help` (line 88)
+- `const getHelpText` (line 98)
 - `const listReleases` (line 263 - important for pointing to the correct repo)
 - `const downloadReleaseFile` (line 321, variable `req`)
 - `const downloadRelease` (line 350, variable `req`)
@@ -27,7 +27,7 @@ To customize the CLI, it's important to change the following spots in the CLI (a
 Important areas to modify:
 - `name`
 - `version`
-- `scripts for pkg:prep/build/hash/sign` (important for signing release)
+- `scripts for pkg:prep/build/hash/nosign/sign` (important for signing release)
 - `repository: url` (line 40)
 
 #### package-lock.json
