@@ -7,11 +7,11 @@
     "bitcurator-cli": "bitcurator-cli.js"
   },
   "engines": {
-    "node": "20.x"
+    "node": "22.x"
   },
   "scripts": {
     "pkg:prep": "jo version=$(bash .ci/version) > config.json",
-    "pkg:build": "pkg -t node20-linux-x64 --out-dir release package.json && cd release && mv bitcurator-cli bitcurator-cli-linux",
+    "pkg:build": "pkg -t node22-linux-x64 --out-dir release package.json && cd release && mv bitcurator-cli bitcurator-cli-linux",
     "pkg:hash": "cd release && shasum -a 256 bitcurator-cli-linux > bitcurator-cli-linux.sha256",
     "pkg:sign": "cd release && rm -f bitcurator-cli-linux.sha256.asc && gpg --armor --clearsign --digest-algo SHA256 -u 1ACB8887 bitcurator-cli-linux.sha256 && rm bitcurator-cli-linux.sha256",
     "pkg:nosign": "npm run pkg:prep && npm run pkg:build && npm run pkg:hash",
