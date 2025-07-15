@@ -7,7 +7,7 @@ This documentation is intended for developers and maintainers. To install BitCur
 - jq
 - gpg
 - git
-- nodejs (minimum v12 - 14, with npm - see instructions [here](https://github.com/nodesource/distributions/blob/master/README.md#installation-instructions))
+- nodejs (minimum v22, with npm - see instructions [here](https://github.com/nodesource/distributions/blob/master/README.md#installation-instructions))
 
 ```bash
 $ sudo apt-get install jo jq gpg nodejs npm
@@ -38,8 +38,7 @@ Important areas to modify:
 ### Building
 Change to the CLI directory and run the following:
 ```bash
-$ sudo npm install -g pkg docopt @octokit/rest js-yaml mkdirp openpgp request semver split username bluebird
-$ npm install bluebird
+$ sudo npm install -g pkg docopt @octokit/rest js-yaml mkdirp openpgp semver split username
 $ npm install
 ```
 To avoid having the node_modules folder, and the soon-to-be-created release folder, uploaded during a `git push`, create a `.gitignore` file and ensure these are added.
