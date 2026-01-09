@@ -10,13 +10,13 @@ const docopt = require('docopt').docopt
 const { Octokit } = require('@octokit/rest')
 const { mkdirp } = require('mkdirp')
 const openpgp = require('openpgp')
-const username = require('username')
+
 const readline = require('readline')
 const split = require('split')
 const execAsync = promisify(child_process.exec)
 const yaml = require('js-yaml')
 
-const currentUser = process.env.SUDO_USER || username.sync()
+const currentUser = process.env.SUDO_USER || os.userInfo().username
 
 const doc = `
 Usage:
@@ -154,6 +154,10 @@ const validOS = async () => {
     }
 
     if (contents.indexOf('UBUNTU_CODENAME=noble') !== -1) {
+      return true
+    }
+    
+    if (contents.indexOf('UBUNTU_CODENAME=resolute') !== -1) {
       return true
     }
 

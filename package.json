@@ -1,17 +1,17 @@
 {
   "name": "bitcurator-cli",
-  "version": "3.0.0",
+  "version": "3.1.0",
   "description": "Manage your bitcurator installation",
   "main": "bitcurator-cli.js",
   "bin": {
     "bitcurator-cli": "bitcurator-cli.js"
   },
   "engines": {
-    "node": "22.x"
+    "node": "24.x"
   },
   "scripts": {
     "pkg:prep": "jo version=$(bash .ci/version) > config.json",
-    "pkg:build": "pkg -t node22-linux-x64 --out-dir release package.json && cd release && mv bitcurator-cli bitcurator-cli-linux",
+    "pkg:build": "pkg -t node24-linux-x64 --out-dir release package.json && cd release && mv bitcurator-cli bitcurator-cli-linux",
     "pkg:hash": "cd release && shasum -a 256 bitcurator-cli-linux > bitcurator-cli-linux.sha256",
     "pkg:sign": "cd release && rm -f bitcurator-cli-linux.sha256.asc && gpg --armor --clearsign --digest-algo SHA256 -u 1ACB8887 bitcurator-cli-linux.sha256 && rm bitcurator-cli-linux.sha256",
     "pkg:nosign": "npm run pkg:prep && npm run pkg:build && npm run pkg:hash",
@@ -22,16 +22,15 @@
   "dependencies": {
     "@octokit/rest": "^18.12.0",
     "docopt": "0.6.2",
-    "js-yaml": "4.1.0",
+    "js-yaml": "4.1.1",
     "mkdirp": "3.0.1",
-    "openpgp": "6.1.1",
+    "openpgp": "6.3.0",
     "proxy-agent": "6.5.0",
-    "split": "1.0.1",
-    "username": "5.1.0"
+    "split": "1.0.1"
   },
   "devDependencies": {
-    "@eslint/js": "^9.30.1",
-    "@yao-pkg/pkg": "6.5.1",
+    "@eslint/js": "^9.39.1",
+    "@yao-pkg/pkg": "6.10.1",
     "eslint": "^9.30.1",
     "globals": "^16.3.0"
   },

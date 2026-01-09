@@ -7,11 +7,26 @@ This documentation is intended for developers and maintainers. To install BitCur
 - jq
 - gpg
 - git
-- nodejs (minimum v22, with npm - see instructions [here](https://github.com/nodesource/distributions/blob/master/README.md#installation-instructions))
+- nodejs (v24, with npm - see instructions [here](https://github.com/nodesource/distributions/blob/master/README.md#installation-instructions))
 
 ```bash
-$ sudo apt-get install jo jq gpg nodejs npm
+$ sudo apt-get install jo jq gpg
 ```
+
+```bash
+# Follow the instructions at: https://nodejs.org/en/download (example here)
+# Download and install nvm:
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
+# in lieu of restarting the shell
+\. "$HOME/.nvm/nvm.sh"
+# Download and install Node.js:
+nvm install 24
+# Verify the Node.js version:
+node -v # Should print "v24.11.1".
+# Verify npm version:
+npm -v # Should print "11.6.2".
+```
+
 ### Modifying
 To customize the CLI, it's important to change the following spots in the CLI (as desired):
 #### xxx-cli.js
@@ -38,7 +53,7 @@ Important areas to modify:
 ### Building
 Change to the CLI directory and run the following:
 ```bash
-$ sudo npm install -g pkg docopt @octokit/rest js-yaml mkdirp openpgp semver split username
+$ sudo npm install -g pkg docopt @octokit/rest js-yaml mkdirp openpgp semver split
 $ npm install
 ```
 To avoid having the node_modules folder, and the soon-to-be-created release folder, uploaded during a `git push`, create a `.gitignore` file and ensure these are added.
