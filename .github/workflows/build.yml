@@ -1,0 +1,103 @@
+name: Build bitcurator-cli
+
+on:
+  push:
+    branches: [main]
+    tags:
+      - 'v*'
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run linter
+        run: npm run lint --if-present
+
+      - name: Fetch tags
+        run: git fetch --prune --unshallow --tags 2>/dev/null || git fetch --prune --tags 2>/dev/null || true
+
+      - name: Prepare package config
+        run: |
+          VERSION=$(jq -r '.version' package.json)
+          EXACT_TAG=$(git describe --exact-match 2>/dev/null | sed -e 's/^v//g' || echo "")
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          REVISION=$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")
+          
+          # If we're on an exact tag, use it
+          if echo "$EXACT_TAG" | grep -qE "^[0-9]+\.[0-9]+\.[0-9]+(-rc\.?[0-9]+)?$"; then
+            FINAL_VERSION="$EXACT_TAG"
+          elif [ -n "$LAST_TAG" ]; then
+            COMMITS=$(git log --oneline ${LAST_TAG}..HEAD | wc -l | tr -d '[:space:]')
+            FINAL_VERSION="${VERSION}.${COMMITS}.g${REVISION}"
+          else
+            FINAL_VERSION="${VERSION}.0.g${REVISION}"
+          fi
+          
+          echo "{\"version\":\"${FINAL_VERSION}\"}" > config.json
+          echo "Generated config.json with version: ${FINAL_VERSION}"
+          cat config.json
+
+      - name: Build executable
+        run: npm run pkg:build
+
+      - name: Generate checksum
+        run: npm run pkg:hash
+
+      - name: Import GPG key
+        uses: crazy-max/ghaction-import-gpg@v6
+        with:
+          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
+          passphrase: ${{ secrets.GPG_PASSPHRASE }}
+
+      - name: Sign checksum
+        run: |
+          cd release
+          gpg --armor --clearsign --digest-algo SHA256 -u 1ACB8887 bitcurator-cli-linux.sha256
+          rm bitcurator-cli-linux.sha256
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: bitcurator-cli-linux
+          path: |
+            release/bitcurator-cli-linux
+            release/bitcurator-cli-linux.sha256.asc
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: bitcurator-cli-linux
+          path: release
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            release/bitcurator-cli-linux
+            release/bitcurator-cli-linux.sha256.asc
+          generate_release_notes: true
