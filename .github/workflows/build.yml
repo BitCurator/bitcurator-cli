@@ -29,8 +29,29 @@ jobs:
       - name: Run linter
         run: npm run lint --if-present
 
+      - name: Fetch tags
+        run: git fetch --prune --unshallow --tags 2>/dev/null || git fetch --prune --tags 2>/dev/null || true
+
       - name: Prepare package config
-        run: npm run pkg:prep
+        run: |
+          VERSION=$(jq -r '.version' package.json)
+          EXACT_TAG=$(git describe --exact-match 2>/dev/null | sed -e 's/^v//g' || echo "")
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          REVISION=$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")
+          
+          # If we're on an exact tag, use it
+          if echo "$EXACT_TAG" | grep -qE "^[0-9]+\.[0-9]+\.[0-9]+(-rc\.?[0-9]+)?$"; then
+            FINAL_VERSION="$EXACT_TAG"
+          elif [ -n "$LAST_TAG" ]; then
+            COMMITS=$(git log --oneline ${LAST_TAG}..HEAD | wc -l | tr -d '[:space:]')
+            FINAL_VERSION="${VERSION}.${COMMITS}.g${REVISION}"
+          else
+            FINAL_VERSION="${VERSION}.0.g${REVISION}"
+          fi
+          
+          echo "{\"version\":\"${FINAL_VERSION}\"}" > config.json
+          echo "Generated config.json with version: ${FINAL_VERSION}"
+          cat config.json
 
       - name: Build executable
         run: npm run pkg:build
