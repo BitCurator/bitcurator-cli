@@ -64,7 +64,14 @@ While still in the directory, run: `npm run pkg`
 
 This will create the release folder with a `.sha256.asc` signature and the generated binary. Once your build is tested and you're satisfied with the way it turned out, it's time to release it.
 
-### Release
+### Release (new style, GitHub Workflow)
+There is a workflow in .github/workflows/build.yml. It includes:
+
+Triggers: Runs on pushes/PRs to main, version tags (v\*), and manual dispatch
+Build job: Sets up Node 24, installs dependencies, runs the linter if present, and builds the executable with checksum
+Release job: Automatically creates a GitHub Release with the built artifacts when you push a version tag (e.g., git tag v3.1.0 && git push --tags)
+
+### Release (old style, manual)
 First thing to do would be to add, commit, and push to the repo:
 ```bash
 $ git add -A
