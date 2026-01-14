@@ -3,6 +3,7 @@
 # bitcurator-cli
 
 [![GitHub issues](https://img.shields.io/github/issues/bitcurator/bitcurator-salt.svg)](https://github.com/bitcurator/bitcurator-salt/issues)
+[![Build](https://github.com/bitcurator/bitcurator-cli/actions/workflows/build.yml/badge.svg)](https://github.com/bitcurator/bitcurator-cli/actions/workflows/build.yml)
 [![GitHub forks](https://img.shields.io/github/forks/bitcurator/bitcurator-salt.svg)](https://github.com/bitcurator/bitcurator-salt/network)
 
 This repo contains the source for the BitCurator CLI installer, a command line tool to install and upgrade the BitCurator environment. It supports BitCurator installations on Ubuntu 24.04LTS (Noble) and Ubuntu 22.04LTS (Jammy).
