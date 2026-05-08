@@ -208,8 +208,36 @@ const saltCheckVersion = async (path, value) => {
 
 const setupSalt = async () => {
   if (cli['--dev'] === false) {
+    const aptKeyringDir = '/etc/apt/keyrings'
+    const aptKeyringPath = `${aptKeyringDir}/salt-archive-keyring.pgp`
     const aptSourceList = '/etc/apt/sources.list.d/saltstack.list'
-    const aptDebString = `deb [signed-by=/usr/share/keyrings/salt-archive-keyring.pgp, arch=amd64] https://packages.broadcom.com/artifactory/saltproject-deb/ stable main`
+    const aptDebString = `deb [signed-by=${aptKeyringPath} arch=amd64] https://packages.broadcom.com/artifactory/saltproject-deb/ stable main`
+
+    // Clean up any stale Salt repo source files at conflicting paths that
+    // would cause apt-get update to fail with "Conflicting values set for
+    // option Signed-By". These can be left behind by previous installs or
+    // by users following the upstream Salt install instructions, which now
+    // write to /etc/apt/sources.list.d/salt.list with the keyring at
+    // /etc/apt/keyrings/. Older configurations placed the keyring at
+    // /usr/share/keyrings/. Either situation collides with our source file
+    // if both reference the same repo URL with different Signed-By paths.
+    const conflictingSources = [
+      '/etc/apt/sources.list.d/salt.list',
+      '/etc/apt/sources.list.d/salt.sources',
+    ]
+    for (const path of conflictingSources) {
+      if (await fileExists(path)) {
+        console.log(`NOTICE: Removing conflicting Salt source file at ${path}`)
+        await fs.unlink(path)
+      }
+    }
+    // Also remove a stale keyring at the legacy location if one exists,
+    // so it cannot be referenced by any leftover configuration.
+    const legacyKeyring = '/usr/share/keyrings/salt-archive-keyring.pgp'
+    if (await fileExists(legacyKeyring)) {
+      console.log(`NOTICE: Removing legacy Salt keyring at ${legacyKeyring}`)
+      await fs.unlink(legacyKeyring)
+    }
 
     const aptExists = await fileExists(aptSourceList)
     const saltExists = await fileExists('/usr/bin/salt-call')
@@ -219,8 +247,9 @@ const setupSalt = async () => {
       console.log('NOTICE: Fixing incorrect SaltStack version configuration.')
       console.log('Installing and configuring SaltStack...')
       await execAsync('apt-get remove -y --allow-change-held-packages salt-minion salt-common')
+      await mkdirp(aptKeyringDir)
       await fs.writeFile(aptSourceList, aptDebString)
-      await execAsync(`wget -O /usr/share/keyrings/salt-archive-keyring.pgp https://packages.broadcom.com/artifactory/api/security/keypair/SaltProjectKey/public`)
+      await execAsync(`wget -O ${aptKeyringPath} https://packages.broadcom.com/artifactory/api/security/keypair/SaltProjectKey/public`)
       await execAsync(`printf 'Package: salt-*\nPin: version ${saltstackVersion}.*\nPin-Priority: 1001' > /etc/apt/preferences.d/salt-pin-1001`)
       await execAsync('apt-get update')
       await execAsync('apt-get install -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" -y --allow-change-held-packages salt-common', {
@@ -231,8 +260,9 @@ const setupSalt = async () => {
       })
     } else if (aptExists === false || saltExists === false) {
       console.log('Installing and configuring SaltStack...')
+      await mkdirp(aptKeyringDir)
       await fs.writeFile(aptSourceList, aptDebString)
-      await execAsync(`wget -O /usr/share/keyrings/salt-archive-keyring.pgp https://packages.broadcom.com/artifactory/api/security/keypair/SaltProjectKey/public`)
+      await execAsync(`wget -O ${aptKeyringPath} https://packages.broadcom.com/artifactory/api/security/keypair/SaltProjectKey/public`)
       await execAsync(`printf 'Package: salt-*\nPin: version ${saltstackVersion}.*\nPin-Priority: 1001' > /etc/apt/preferences.d/salt-pin-1001`)
       await execAsync('apt-get update')
       await execAsync('apt-get install -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" -y --allow-change-held-packages salt-common', {
