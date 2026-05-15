@@ -197,7 +197,7 @@ const fileExists = async (path) => {
 const saltCheckVersion = async (path, value) => {
   try {
     const contents = await fs.readFile(path, 'utf8')
-    return contents.indexOf(value) === 0
+    return contents.indexOf(value) !== -1
   } catch (err) {
     if (err.code === 'ENOENT') {
       return false
@@ -210,18 +210,27 @@ const setupSalt = async () => {
   if (cli['--dev'] === false) {
     const aptKeyringDir = '/etc/apt/keyrings'
     const aptKeyringPath = `${aptKeyringDir}/salt-archive-keyring.pgp`
-    const aptSourceList = '/etc/apt/sources.list.d/saltstack.list'
-    const aptDebString = `deb [signed-by=${aptKeyringPath} arch=amd64] https://packages.broadcom.com/artifactory/saltproject-deb/ stable main`
+    // DEB822-format source file. Note the .sources extension (required for
+    // DEB822) rather than .list (which APT parses as one-line format).
+    const aptSourceList = '/etc/apt/sources.list.d/saltstack.sources'
+    const aptDebString = `Types: deb
+URIs: https://packages.broadcom.com/artifactory/saltproject-deb/
+Suites: stable
+Components: main
+Architectures: amd64
+Signed-By: ${aptKeyringPath}
+`
 
     // Clean up any stale Salt repo source files at conflicting paths that
     // would cause apt-get update to fail with "Conflicting values set for
-    // option Signed-By". These can be left behind by previous installs or
-    // by users following the upstream Salt install instructions, which now
-    // write to /etc/apt/sources.list.d/salt.list with the keyring at
-    // /etc/apt/keyrings/. Older configurations placed the keyring at
-    // /usr/share/keyrings/. Either situation collides with our source file
-    // if both reference the same repo URL with different Signed-By paths.
+    // option Signed-By", or that would simply duplicate our repo entry.
+    // These can be left behind by previous installs (which used the .list
+    // one-line format under a different filename) or by users following
+    // the upstream Salt install instructions (which write salt.list or
+    // salt.sources). Either situation collides with our source file if
+    // both reference the same repo URL.
     const conflictingSources = [
+      '/etc/apt/sources.list.d/saltstack.list',
       '/etc/apt/sources.list.d/salt.list',
       '/etc/apt/sources.list.d/salt.sources',
     ]
