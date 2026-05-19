@@ -197,7 +197,7 @@ const fileExists = async (path) => {
 const saltCheckVersion = async (path, value) => {
   try {
     const contents = await fs.readFile(path, 'utf8')
-    return contents.indexOf(value) === 0
+    return contents.indexOf(value) !== -1
   } catch (err) {
     if (err.code === 'ENOENT') {
       return false
@@ -206,22 +206,53 @@ const saltCheckVersion = async (path, value) => {
   }
 }
 
+const installSaltKeyring = async (targetPath) => {
+  // Download the Salt project's signing key (served as ASCII-armored PGP)
+  // and write it to ${targetPath} in binary GPG keyring format. Newer APT
+  // (Ubuntu 26.04 / "Resolute Raccoon" and later) only accepts binary
+  // keyrings and rejects ASCII-armored input with "the file has an
+  // unsupported filetype". Older APT versions accept either format, so
+  // writing binary is safe on 22.04 and 24.04 as well.
+  //
+  // We use openpgp.js (already a dependency, see validateSignature) to do
+  // the conversion in-process. This is equivalent to `gpg --dearmor` but
+  // avoids shelling out and means the cli does not require the gnupg
+  // binary on the target system.
+  const keyUrl = 'https://packages.broadcom.com/artifactory/api/security/keypair/SaltProjectKey/public'
+  const response = await fetch(keyUrl)
+  if (!response.ok) {
+    throw new Error(`Failed to download Salt signing key: HTTP ${response.status} ${response.statusText}`)
+  }
+  const armoredKey = await response.text()
+  const publicKey = await openpgp.readKey({ armoredKey })
+  await fs.writeFile(targetPath, publicKey.write())
+}
+
 const setupSalt = async () => {
   if (cli['--dev'] === false) {
     const aptKeyringDir = '/etc/apt/keyrings'
     const aptKeyringPath = `${aptKeyringDir}/salt-archive-keyring.pgp`
-    const aptSourceList = '/etc/apt/sources.list.d/saltstack.list'
-    const aptDebString = `deb [signed-by=${aptKeyringPath} arch=amd64] https://packages.broadcom.com/artifactory/saltproject-deb/ stable main`
+    // DEB822-format source file. Note the .sources extension (required for
+    // DEB822) rather than .list (which APT parses as one-line format).
+    const aptSourceList = '/etc/apt/sources.list.d/saltstack.sources'
+    const aptDebString = `Types: deb
+URIs: https://packages.broadcom.com/artifactory/saltproject-deb/
+Suites: stable
+Components: main
+Architectures: amd64
+Signed-By: ${aptKeyringPath}
+`
 
     // Clean up any stale Salt repo source files at conflicting paths that
     // would cause apt-get update to fail with "Conflicting values set for
-    // option Signed-By". These can be left behind by previous installs or
-    // by users following the upstream Salt install instructions, which now
-    // write to /etc/apt/sources.list.d/salt.list with the keyring at
-    // /etc/apt/keyrings/. Older configurations placed the keyring at
-    // /usr/share/keyrings/. Either situation collides with our source file
-    // if both reference the same repo URL with different Signed-By paths.
+    // option Signed-By", or that would simply duplicate our repo entry.
+    // These can be left behind by previous installs (which used the .list
+    // one-line format under a different filename) or by users following
+    // the upstream Salt install instructions (which write salt.list or
+    // salt.sources). Either situation collides with our source file if
+    // both reference the same repo URL.
     const conflictingSources = [
+      '/etc/apt/sources.list.d/saltstack.list',
       '/etc/apt/sources.list.d/salt.list',
       '/etc/apt/sources.list.d/salt.sources',
     ]
@@ -249,14 +280,7 @@ const setupSalt = async () => {
       await execAsync('apt-get remove -y --allow-change-held-packages salt-minion salt-common')
       await mkdirp(aptKeyringDir)
       await fs.writeFile(aptSourceList, aptDebString)
-      // The Salt project serves an ASCII-armored PGP key, but newer APT
-      // (Ubuntu 26.04 / "Resolute Raccoon" and later) only accepts binary
-      // GPG keyring format. Pipe the downloaded key through `gpg --dearmor`
-      // to convert it, then write the binary result to ${aptKeyringPath}.
-      // Without this conversion APT logs: "the file has an unsupported
-      // filetype" and treats the repo as unsigned. Older APT versions
-      // accept either format, so this is safe on 22.04 and 24.04 as well.
-      await execAsync(`set -o pipefail && curl -fsSL https://packages.broadcom.com/artifactory/api/security/keypair/SaltProjectKey/public | gpg --dearmor --yes -o ${aptKeyringPath}`, { shell: '/bin/bash' })
+      await installSaltKeyring(aptKeyringPath)
       await execAsync(`printf 'Package: salt-*\nPin: version ${saltstackVersion}.*\nPin-Priority: 1001' > /etc/apt/preferences.d/salt-pin-1001`)
       await execAsync('apt-get update')
       await execAsync('apt-get install -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" -y --allow-change-held-packages salt-common', {
@@ -269,8 +293,7 @@ const setupSalt = async () => {
       console.log('Installing and configuring SaltStack...')
       await mkdirp(aptKeyringDir)
       await fs.writeFile(aptSourceList, aptDebString)
-      // See comment above re: gpg --dearmor.
-      await execAsync(`set -o pipefail && curl -fsSL https://packages.broadcom.com/artifactory/api/security/keypair/SaltProjectKey/public | gpg --dearmor --yes -o ${aptKeyringPath}`, { shell: '/bin/bash' })
+      await installSaltKeyring(aptKeyringPath)
       await execAsync(`printf 'Package: salt-*\nPin: version ${saltstackVersion}.*\nPin-Priority: 1001' > /etc/apt/preferences.d/salt-pin-1001`)
       await execAsync('apt-get update')
       await execAsync('apt-get install -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" -y --allow-change-held-packages salt-common', {
